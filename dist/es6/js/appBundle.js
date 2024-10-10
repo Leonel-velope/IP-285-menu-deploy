@@ -3,7 +3,7 @@
  * SDK version: 5.5.4
  * CLI version: 2.14.2
  * 
- * Generated: Wed, 09 Oct 2024 22:13:53 GMT
+ * Generated: Thu, 10 Oct 2024 15:54:31 GMT
  */
 
 var APP_com_domain_app_MyAwesomeApp = (function () {
@@ -14823,18 +14823,6 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       this._card = this.getByRef('Card');
       this._details = this._card.getByRef('Details');
       this._id = 0;
-      // set movieIndex(value: number) {
-      //     this._card.patch({
-      //         movieIndex: value,
-      //     });
-      // }
-      // override _handleLeft() {
-      //     if (this._card.movieIndex === 0) {
-      //         Router.focusWidget("Menu")
-      //         return true;
-      //     }
-      //     return false;
-      // }
     }
     static _template() {
       return {
@@ -14858,13 +14846,17 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             color: Colors('unfocused').get(),
             Title: {
               x: 175,
-              y: 35,
+              y: 25,
               mountX: 0.5,
               text: {
-                text: 'Unknown title',
+                text: 'title Not found',
                 fontFace: 'Regular',
-                fontSize: 34,
-                textColor: Colors('white').get()
+                fontSize: 30,
+                textColor: Colors('white').get(),
+                wordWrapWidth: 350,
+                textOverflow: true,
+                maxLines: 1,
+                maxLinesSuffix: '...'
               }
             },
             Description: {
@@ -14873,9 +14865,9 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
               y: 130,
               mount: 0.5,
               text: {
-                text: 'Unknown description',
+                text: 'description Not found',
                 fontFace: 'Regular',
-                fontSize: 24,
+                fontSize: 25,
                 textColor: Colors('white').get(),
                 wordWrapWidth: 350,
                 textOverflow: true,
@@ -14888,7 +14880,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
               y: 218,
               mount: 0.5,
               text: {
-                text: '00-00-0000',
+                text: 'date Not found',
                 fontFace: 'Regular',
                 fontSize: 24,
                 textColor: Colors('white').get()
@@ -14925,7 +14917,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       this._details.patch({
         Title: {
           text: {
-            text: value ? value : 'Unknown title'
+            text: value ? value : ' title'
           }
         }
       });
@@ -14936,7 +14928,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       this._details.patch({
         ReleaseDate: {
           text: {
-            text: value ? value : 'Unknown release date'
+            text: value ? value : ' release date'
           }
         }
       });
@@ -14945,7 +14937,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       this._details.patch({
         Description: {
           text: {
-            text: value ? value : 'Unknown description'
+            text: value ? value : ' description'
           }
         }
       });
@@ -14974,10 +14966,9 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
     try {
       let response;
       const withGenres = id || null;
-      const url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc".concat(id ? "&with_genres=".concat(id) : '');
+      const url = "https://api.themoviedb.org/3/discover/movie?include_adult=false&include_video=false&language=en-US&page=1&sort_by=popularity.desc".concat(id ? "&with_genres=".concat(withGenres) : '');
       response = await fetch(url, options);
-      const data = await response.json();
-      return data;
+      return response.json();
     } catch (error) {
       console.error('There has been a problem with your fetch operation:', error);
       throw error;
@@ -14999,6 +14990,8 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       let response;
       response = await fetch("https://api.themoviedb.org/3/movie/".concat(value, "?language=en-US"), options);
       const data = await response.json();
+      data.backGround_path = data.backdrop_path ? "".concat(imageUrlS.backgroundURL).concat(data.backdrop_path) : '';
+      data.poster_path = "".concat(imageUrlS.backdropURL).concat(data.poster_path);
       return data;
     } catch (error) {
       console.error('There has been a problem with your fetch operation:', error);
@@ -18109,6 +18102,16 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
           colorBr: 0xFF3d1437,
           colorUr: 0xFF060c31
         },
+        ParentColumn: {
+          type: Column,
+          w: 1920,
+          h: 880,
+          y: 200,
+          x: 200,
+          alwaysScroll: true,
+          wrapSelected: true,
+          items: []
+        },
         RectangleResolution: {
           w: 900,
           h: 100,
@@ -18121,22 +18124,12 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             x: 450,
             mount: 0.5,
             text: {
-              text: "Session information: unknown Information",
+              text: "",
               fontFace: 'Regular',
               fontSize: 24,
               textColor: Colors('white').get()
             }
           }
-        },
-        ParentColumn: {
-          type: Column,
-          w: 1920,
-          h: 880,
-          y: 200,
-          x: 200,
-          alwaysScroll: true,
-          wrapSelected: true,
-          items: []
         }
       };
     }
@@ -18182,7 +18175,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             let allMovies = [];
             while (this.page <= 4) {
               movieRes = await fetchMoviesByGenre(movieInfo.genreId, this.page);
-              allMovies = allMovies.concat(movieRes.results);
+              allMovies.push(...movieRes.results);
               this.page++;
             }
             movieRes = {
@@ -18207,7 +18200,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             ;
             return {
               type: CardComponent,
-              w: 500,
+              w: 400,
               movieID: id,
               movieTitle: title,
               movieReleaseDate: release_date,
@@ -18233,8 +18226,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             y: 600,
             type: Row,
             items: movieList,
-            alwaysScroll: true,
-            wrapSelected: true
+            alwaysScroll: true
           };
         }));
         this._parentColumn.items = movieCollection;
@@ -18245,14 +18237,14 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
     _getFocused() {
       return this._parentColumn;
     }
-    _captureLeft() {
-      console.log(this._parentColumn.selectedIndex);
-      if (this._parentColumn.selectedIndex === 0) {
-        console.log('zero');
-        Router.focusWidget("Menu");
-        return true;
-      }
-      return false;
+    _handleLeft() {
+      Router.focusWidget("Menu");
+    }
+    _handleBack() {
+      return;
+    }
+    _handleDown() {
+      return true;
     }
   }
 
@@ -18300,7 +18292,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             Title: {
               y: 50,
               text: {
-                text: 'Loading title',
+                text: '',
                 fontSize: 44,
                 textColor: Colors('white').get()
               }
@@ -18308,7 +18300,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             Tagline: {
               y: 120,
               text: {
-                text: 'Loading tagline',
+                text: '',
                 fontSize: 30,
                 textColor: Colors('white').get()
               }
@@ -18319,7 +18311,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
               y: 185,
               text: {
                 wordWrapWidth: 900,
-                text: 'Loading description',
+                text: '',
                 fontSize: 28,
                 textColor: Colors('white').get()
               }
@@ -18327,7 +18319,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             Status: {
               y: 410,
               text: {
-                text: 'Loading status',
+                text: '',
                 fontSize: 24,
                 textColor: Colors('white').get()
               }
@@ -18336,7 +18328,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
               x: 200,
               y: 410,
               text: {
-                text: "Release Date: Loading date",
+                text: "",
                 fontSize: 24,
                 textColor: Colors('white').get()
               }
@@ -18363,7 +18355,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
     }
     set movieData(data) {
       let {
-        backdrop_path,
+        backGround_path,
         poster_path,
         original_title,
         overview,
@@ -18372,13 +18364,11 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
         tagline
       } = data;
       let formattedReleaseDate = release_date ? this.parseMovieReleaseDate(release_date) : '';
-      let imgBackground = "".concat(imageUrlS.backgroundURL).concat(backdrop_path);
-      let imgPoster = "".concat(imageUrlS.backdropURL).concat(poster_path);
       this._backGround.patch({
-        src: imgBackground
+        src: backGround_path
       });
       this.tag('Poster').patch({
-        src: imgPoster
+        src: poster_path
       });
       this._movieDetails.patch({
         MovieInformation: {
@@ -18457,9 +18447,9 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       return {
         Menu: {
           rect: true,
-          w: 480,
+          w: 20,
           h: 1080,
-          x: -460,
+          x: 0,
           color: Colors('detailsBackground').get(),
           MenuTitle: {
             w: 400,
@@ -18467,6 +18457,7 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             Title: {
               x: 130,
               y: 120,
+              alpha: 0,
               text: {
                 text: 'Categories',
                 fontSize: 40,
@@ -18480,7 +18471,8 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
             type: Column,
             extraItemSpacing: 20,
             items: [],
-            wrapSelected: true
+            wrapSelected: true,
+            alpha: 0
           }
         }
       };
@@ -18511,12 +18503,18 @@ var APP_com_domain_app_MyAwesomeApp = (function () {
       this.focused = false;
     }
     set focused(isFocused) {
-      const menuPosition = isFocused ? 0 : -460;
-      this._menu.setSmooth('x', menuPosition);
+      const menuWidth = isFocused ? 480 : 20;
+      const alpha = isFocused ? 1 : 0;
+      this._menu.setSmooth('w', menuWidth);
+      this.tag('Title').setSmooth('alpha', alpha);
+      this._menuOptions.setSmooth('alpha', alpha);
     }
     _handleEnter() {
       let genreId = this._menuOptions.selected.genreId;
       Router.navigate("home/".concat(genreId));
+    }
+    _handleLeft() {
+      return;
     }
   }
 
